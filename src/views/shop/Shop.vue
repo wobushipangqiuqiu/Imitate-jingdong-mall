@@ -1,0 +1,107 @@
+<template>
+  <div class="wrapper">
+    <div class="search">
+      <div class="search__back iconfont" @click="handleBackClick">&#xe6db;</div>
+      <div class="search__content">
+        <span class="search__content__icon iconfont">&#xe61a;</span>
+        <input
+          class="search__content__input"
+          placeholder="请输入商品名称搜索"
+        />
+      </div>
+    </div>
+    <ShopInfo :item="item" :hideBoder="true" v-show="item.imgUrl" />
+    <Content :shopName="item.name" />
+    <Cart />
+  </div>
+</template>
+<script>
+import { reactive, toRefs } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { get } from '../../utils/request'
+import ShopInfo from '../../components/ShopInfo.vue'
+import Content from '../../views/shop/Content.vue'
+import Cart from '../../views/shop/Cart.vue'
+// 获取当前商铺信息
+const useShopInfoEffect = () => {
+  const route = useRoute()
+  const data = reactive({
+    item: {}
+  })
+  const getItemData = async () => {
+    const result = await get(`/api/shop/${route.params.id}`)
+    if (result?.errno === 0 && result?.data) {
+      data.item = result.data
+    }
+  }
+  const { item } = toRefs(data)
+  return { item, getItemData }
+}
+// 点击回退逻辑
+const useBackRouterEffect = () => {
+  const router = useRouter()
+  const handleBackClick = () => {
+    router.back()
+  }
+  return { handleBackClick }
+}
+export default {
+  name: 'Shop',
+  components: {
+    ShopInfo, Content, Cart
+  },
+  setup() {
+    const { item, getItemData } = useShopInfoEffect()
+    getItemData()
+    const { handleBackClick } = useBackRouterEffect()
+    return { item, handleBackClick }
+  }
+}
+</script>
+<style lang="scss" scoped>
+@import '../../style/viriables.scss';
+@import '../../style/mixins.scss';
+.wrapper {
+  padding: 0 0.18rem;
+}
+.search {
+  margin: 0.14rem 0 0.04rem 0;
+  display: flex;
+  &__back {
+    line-height: 0.32rem;
+    width: 0.3rem;
+    font-size: 0.3rem;
+    color: #b6b6b6;
+  }
+  &__content {
+    height: 0.36rem;
+    line-height: 0.36rem;
+    display: flex;
+    flex: 1;
+    background: $search-bgColor;
+    border-radius: 0.16rem;
+    &__icon {
+      position: relative;
+      width: 0.44rem;
+      // height: 0.32rem;
+      // line-height: 0.32rem;
+      text-align: center;
+      font-size: 0.2rem;
+      color: $search-fontColor;
+    }
+    &__input {
+      outline: none;
+      border: none;
+      background: none;
+      display: block;
+      flex: 1;
+      padding-right: 0.2rem;
+      color: $content-fontcolor;
+      font-size: 0.13rem;
+      &::placeholder {
+        color: $content-fontcolor;
+      }
+    }
+  }
+}
+</style>
